@@ -1,27 +1,31 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request
 import requests
+import os
 
 app = FastAPI()
 
-class Query(BaseModel):
-    question: str
-
-@app.get("/")
-def home():
-    return {"message": "Auralis API running"}
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 @app.post("/ask")
-def ask_ai(query: Query):
+async def ask(request: Request):
+    data = await request.json()
+    user_message = data.get("message")
 
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={
-            "model": "llama3",
-            "prompt": query.question,
-            "stream": False
-        }
-    )
+    url = "https://api.groq.com/openai/v1/chat/completions"
 
-    result = response.json()
-    return {"answer": result["response"]}
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "model": "llama3-8b-8192",
+        "messages": [
+            {"role": "system", "content": "You are Auralis, a helpful AI assistant for students."},
+            {"role": "user", "content": user_message}
+        ]
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
+    return response.json()
