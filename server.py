@@ -19,7 +19,7 @@ async def ask(request: Request):
     }
 
     payload = {
-        "model": "llama3-8b-8192",
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {"role": "system", "content": "You are Auralis, a helpful AI assistant for students."},
             {"role": "user", "content": user_message}
